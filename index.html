@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Birthday Quest 🎂</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; background: #0C0B1A; }
+    body {
+      height: 100%; background: #0C0B1A;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+    }
+    button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    img { max-width: 100%; display: block; }
+    #root { min-height: 100vh; }
+    .no-scroll { overflow: hidden; }
+  </style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    /* ── PALETTE ───────────────────────────────────────────────── */
+    const C = {
+      bg:     "linear-gradient(160deg,#0C0B1A 0%,#0D1320 55%,#130A1E 100%)",
+      bgSolid:"#0C0B1A",
+      card:   "rgba(255,255,255,0.03)",
+      border: "rgba(255,255,255,0.07)",
+      text:   "#EDE8F5",
+      dim:    "rgba(237,232,245,0.4)",
+      gold:   "#E8C547",
+      pink:   "#FF6B9D",
+      teal:   "#5DBCB0",
+      violet: "#A78BFA",
+      orange: "#FB923C",
+      purple: "#C084FC",
+      green:  "#4ADE80",
+    };
+
+    /* ── PUZZLE DATA ───────────────────────────────────────────── */
+    const PUZZLES = [
+      {
+        id:1, emoji:"📱", label:"Puzzle 1 of 5", theme:"Old School", accent:C.gold,
+        from:"Serangoon Gardens",
+        teaser:"A message from the past. No context given.",
+        intro:[{t:"p",c:"Decode this sequence. Each group of numbers is one letter. The gap is a space."}],
+        mechanic:{
+          type:"t9",
+          code:["4","555","2","7777","7777","SPACE","555","2","6","7","9","666","777","55","444","66","4"],
+        },
+        hints:[
+          "Nokia.",
+          "Multi-tap: 2=ABC · 3=DEF · 4=GHI · 5=JKL · 6=MNO · 7=PQRS · 8=TUV · 9=WXYZ · Press the key N times to get the Nth letter on it.",
+        ],
+        answer:"GLASS LAMPWORKING",
+        reveal:"You're about to shape molten glass under a live torch flame. Like the most beautiful thing you've ever baked — except it doesn't deflate, and you take it home.",
+      },
+      {
+        id:2, emoji:"🔍", label:"Puzzle 2 of 5", theme:"Word Hunt", accent:C.pink,
+        from:"Glass Lampworking",
+        teaser:"You survived fire. Two words are hiding in this grid.",
+        intro:[{t:"p",c:"Two words are hidden in this grid — both reading left to right. Find them, put them together, and that's your next stop."}],
+        mechanic:{
+          type:"wordsearch",
+          grid:[
+            ["K","I","D","O","L","B","A","K","E","S"],
+            ["C","A","F","E","H","O","T","A","K","A"],
+            ["F","A","N","C","Y","S","T","A","R","S"],
+            ["H","E","A","R","T","D","A","T","E","Y"],
+            ["C","H","E","E","R","S","W","A","V","E"],
+          ],
+          highlights:[
+            {row:1,startCol:0,length:4,color:C.gold},
+            {row:3,startCol:5,length:4,color:C.pink},
+          ],
+        },
+        hints:["Both words are 4 letters. They appear in different rows."],
+        answer:"DATE CAFE",
+        reveal:"Date Cafe! Japanese-inspired brunch in Taman Melodies. Walk-in only. You are also, for the record, currently on a date. At Date Cafe. The pun was always going to happen.",
+      },
+      {
+        id:3, emoji:"🔐", label:"Puzzle 3 of 5", theme:"Cipher", accent:C.teal,
+        from:"Date Cafe",
+        teaser:"Something has been done to these letters. Figure out what.",
+        intro:[{t:"p",c:"These letters have been transformed by a secret rule. Crack the rule, then decode the message."}],
+        mechanic:{
+          type:"caesar",
+          encoded:["K","P","Y","A","SPACE","I","P","R","P","U","N"],
+        },
+        hints:[
+          "How many members are there in BTS?",
+          "Think of the alphabet as positions: A=1, B=2, C=3 … Z=26. Each letter in the code has been moved by that count. Undo the move — one letter at a time — to see what you get.",
+        ],
+        answer:"DIRT BIKING",
+        reveal:"ATV Park Johor — Ekoflora Trail! One hour of guided off-road dirt biking through the forest. Helmets, boots, and ponchos all on site. That gymnast core is about to meet mud.",
+      },
+      {
+        id:4, emoji:"🇰🇷", label:"Puzzle 4 of 5", theme:"Lost in Translation", accent:C.violet,
+        from:"Dirt Biking",
+        teaser:"Muddy, hungry, and about to get linguistically confused.",
+        intro:[{t:"p",c:"Your next destination is hiding inside the Korean language. Two clues — both answers are everyday Korean words."}],
+        mechanic:{
+          type:"korean",
+          clues:[
+            {emoji:"🧩",label:"Clue A",text:"In Korean, what do you call the woman who raised you — the one who packed your lunchbox, texted you too many times, and still worries when you're out late?"},
+            {emoji:"🧩",label:"Clue B",text:"In Korean, what is the single most polite word to ask someone to leave the room — one word, honorific form, said firmly but respectfully?"},
+          ],
+          instruction:"Write down both Korean words. Say them together, in order, quickly — no pause. Listen closely to what you're saying.",
+        },
+        hints:[
+          "Both words are simple, everyday Korean. Think: family and movement.",
+          "엄마 가세요! — Say this out loud. Fast. Drop the very last syllable (요). What does it sound like?",
+        ],
+        answer:"OMAKASE",
+        reveal:"엄마 가세요 (Omma gaseyo) = 'Mom, please go' in Korean. Say it fast and drop the 요: Om·ma·ga·se → OMAKASE. A Japanese word hiding inside Korean phonetics. Tonight the chef decides everything.",
+      },
+      {
+        id:5, emoji:"💜", label:"Puzzle 5 of 5", theme:"K-pop Final", accent:C.orange,
+        from:"Omakase Dinner",
+        teaser:"Last one. Your muscles have been sending you calendar invites.",
+        intro:[{t:"p",c:"Take the FIRST LETTER of each K-pop group below — in order. That spells where you're going."}],
+        mechanic:{
+          type:"kpop-cipher",
+          clues:[
+            {emoji:"🎤",text:"Four queens — 'Starry Night', 'HIP', 'Décalcomanie'. The group Hwasa is from."},
+            {emoji:"⚡",text:"The next-gen SM girl group who exist between the real world and the ae world."},
+            {emoji:"🌟",text:"SM's legendary senior boy group — 'Replay', 'Lucifer', 'Sherlock'. The OGs."},
+            {emoji:"💥",text:"Bangchan, Han, Felix and the crew — 'Gods Menu', 'MIROH', 'BACK DOOR'."},
+            {emoji:"🌸",text:"The original pink-concept girl group — 'Mr. Chu', 'No No No', '%%'."},
+            {emoji:"7️⃣",text:"'If You Do', 'Hard Carry', 'Fly' — literally named because there are 7 of them."},
+            {emoji:"🌍",text:"SM's senior boys — 'Growl', 'Power', 'Ko Ko Bop'. Call and response kings."},
+          ],
+          blank:"_ _ _ _ _ _ _",
+        },
+        hints:["The groups: Mamamoo · aespa · SHINee · Stray Kids · Apink · GOT7 · EXO"],
+        answer:"MASSAGE",
+        reveal:"Tang Retreat! TCM-based spa 2 minutes from where you just ate — same neighbourhood. 90 minutes of couples massage, floral tea and a daily dessert after. You've genuinely earned every minute of this.",
+      },
+    ];
+
+    const BONUS = {
+      id:"bonus", emoji:"🎮", label:"BONUS ROUND", theme:"Night Mode", accent:C.purple,
+      from:"Massage", teaser:"The night isn't over yet.",
+      intro:[
+        {t:"p",c:"SURPRISE. One more stop. The game doesn't end at the spa."},
+        {t:"br"},
+        {t:"p",c:"Pokémon National Pokédex Entry #91."},
+        {t:"p",c:"A bivalve shellfish Pokémon with a near-impenetrable shell. Evolves from Shellder using a Water Stone. Legendary for being nearly impossible to open without skill and a very sharp knife."},
+        {t:"br"},
+        {t:"p",c:"Step 1 — The real-life shellfish it's based on. Not the Pokémon's name. The actual creature. Starts with C."},
+        {t:"p",c:"Step 2 — The most generic word for 'a person.'"},
+        {t:"p",c:"Step 3 — Its Pokédex number."},
+        {t:"br"},
+        {t:"p",c:"Open till 3AM. You have all the time in the world. 🌙"},
+      ],
+      hints:["Pokémon #91 = Cloyster. The shellfish it's based on rhymes with 'hams'. Starts with C."],
+      answer:"CLAMS + MAN + 91  =  CLAMS MAN 91",
+      reveal:"Clams Man 91! Live-tank jumbo lala clams. TuaTuaLiap Clam Pot, shrimp-stuffed lala, giant cheesy prawns. Open till 3AM. The perfect ending to the perfect birthday. 🎉",
+    };
+
+    const JOURNEY = [
+      "🍳 Serangoon Gardens — Breakfast",
+      "🔥 Glass Lampworking",
+      "☕ Date Cafe — Japanese Brunch",
+      "🏍️ Dirt Biking",
+      "🍣 Omakase Dinner",
+      "💆 Massage",
+      "🦪 Clams Man 91 — Late Night Supper",
+    ];
+
+    const DAY_PHOTOS = Array.from({length:20}, (_,i) =>
+      `photos/${String(i+1).padStart(2,"0")}.jpg`
+    );
+
+    /* ── MECHANIC COMPONENTS ───────────────────────────────────── */
+    function T9Renderer({code,accent}) {
+      return (
+        <div style={{display:"flex",flexWrap:"wrap",gap:5,justifyContent:"center",padding:"4px 0"}}>
+          {code.map((item,i) =>
+            item==="SPACE" ? <div key={i} style={{width:"100%",height:8}}/> : (
+              <div key={i} style={{background:`${accent}18`,border:`1px solid ${accent}45`,borderRadius:6,minWidth:32,padding:"6px 8px",textAlign:"center",fontFamily:"monospace",color:accent,fontSize:14,fontWeight:700}}>
+                {item}
+              </div>
+            )
+          )}
+        </div>
+      );
+    }
+
+    function WordSearchRenderer({grid,highlights,showAnswer}) {
+      const hl = {};
+      if (showAnswer) highlights.forEach(({row,startCol,length,color}) => {
+        for (let c=startCol; c<startCol+length; c++) hl[`${row},${c}`] = color;
+      });
+      const cellSize = Math.min(28, Math.floor((Math.min(window.innerWidth,440)-32)/10));
+      return (
+        <div style={{overflowX:"auto",textAlign:"center"}}>
+          <div style={{display:"inline-block"}}>
+            {grid.map((row,ri) => (
+              <div key={ri} style={{display:"flex"}}>
+                {row.map((cell,ci) => {
+                  const h = hl[`${ri},${ci}`];
+                  return (
+                    <div key={ci} style={{
+                      width:cellSize,height:cellSize,display:"flex",alignItems:"center",justifyContent:"center",
+                      fontFamily:"monospace",fontSize:Math.max(11,cellSize-16),fontWeight:h?800:500,
+                      color:h?"#0C0B1A":"rgba(237,232,245,0.8)",
+                      background:h||"transparent",
+                      border:`0.5px solid rgba(255,255,255,${h?0:0.07})`,
+                      borderRadius:3,margin:1,transition:"all 0.35s",
+                    }}>{cell}</div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function CaesarRenderer({encoded,accent}) {
+      return (
+        <div style={{display:"flex",flexWrap:"wrap",gap:5,justifyContent:"center",padding:"8px 0"}}>
+          {encoded.map((item,i) =>
+            item==="SPACE" ? <div key={i} style={{width:18}}/> : (
+              <div key={i} style={{background:`${accent}10`,border:`1px solid ${accent}40`,borderRadius:6,width:32,height:40,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"monospace",color:accent,fontSize:17,fontWeight:800}}>
+                {item}
+              </div>
+            )
+          )}
+        </div>
+      );
+    }
+
+    function KoreanRenderer({clues,instruction,accent}) {
+      return (
+        <div>
+          {clues.map((clue,i) => (
+            <div key={i} style={{marginBottom:10,padding:"12px 14px",background:`${accent}0D`,border:`1px solid ${accent}35`,borderRadius:8,display:"flex",gap:10,alignItems:"flex-start"}}>
+              <div style={{flexShrink:0,textAlign:"center",minWidth:32}}>
+                <span style={{fontSize:16}}>{clue.emoji}</span>
+                <p style={{color:accent,fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",margin:"3px 0 0"}}>{clue.label}</p>
+              </div>
+              <p style={{color:C.text,fontSize:13.5,lineHeight:1.55,margin:0}}>{clue.text}</p>
+            </div>
+          ))}
+          {instruction && (
+            <div style={{marginTop:4,padding:"10px 14px",background:"rgba(255,255,255,0.03)",borderRadius:8,borderLeft:`2px solid ${accent}60`}}>
+              <p style={{color:`${accent}CC`,fontSize:12,lineHeight:1.5,margin:0,fontStyle:"italic"}}>🔊 {instruction}</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function KpopRenderer({clues,blank,accent}) {
+      return (
+        <div>
+          {clues.map((clue,i) => (
+            <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:7,padding:"8px 10px",background:`${accent}07`,borderRadius:6,border:`0.5px solid ${accent}20`}}>
+              <span style={{fontSize:15,flexShrink:0}}>{clue.emoji}</span>
+              <p style={{color:C.text,fontSize:12.5,lineHeight:1.45,margin:0,flex:1}}>{clue.text}</p>
+            </div>
+          ))}
+          <p style={{color:accent,fontFamily:"monospace",fontSize:22,fontWeight:700,letterSpacing:6,textAlign:"center",margin:"12px 0 0"}}>{blank}</p>
+        </div>
+      );
+    }
+
+    function Mechanic({data,showAnswer,accent}) {
+      if (!data) return null;
+      switch(data.type) {
+        case "t9":          return <T9Renderer code={data.code} accent={accent}/>;
+        case "wordsearch":  return <WordSearchRenderer grid={data.grid} highlights={data.highlights} showAnswer={showAnswer}/>;
+        case "caesar":      return <CaesarRenderer encoded={data.encoded} accent={accent}/>;
+        case "korean":      return <KoreanRenderer clues={data.clues} instruction={data.instruction} accent={accent}/>;
+        case "kpop-cipher": return <KpopRenderer clues={data.clues} blank={data.blank} accent={accent}/>;
+        default: return null;
+      }
+    }
+
+    function Line({item}) {
+      switch(item.t) {
+        case "p":  return <p style={{color:C.text,fontSize:13.5,lineHeight:1.65,margin:"0 0 8px"}}>{item.c}</p>;
+        case "br": return <div style={{height:1,background:"rgba(255,255,255,0.07)",margin:"10px 0"}}/>;
+        default:   return null;
+      }
+    }
+
+    /* ── BUTTONS ───────────────────────────────────────────────── */
+    const btnPrimary = (accent, dark) => ({
+      background: dark ? "linear-gradient(135deg,#7C3AED,#4C1D95)" : `linear-gradient(135deg,${accent},${accent}BB)`,
+      color: dark ? "#fff" : "#0C0B1A",
+      border:"none",borderRadius:14,padding:"15px 20px",fontSize:16,fontWeight:700,
+      cursor:"pointer",width:"100%",fontFamily:"inherit",minHeight:50,letterSpacing:"0.01em",
+    });
+    const btnGhost = (col) => ({
+      background:"transparent",border:`1px solid ${col}`,color:col,
+      borderRadius:12,padding:"12px 16px",fontSize:13,cursor:"pointer",
+      width:"100%",fontFamily:"inherit",minHeight:46,
+    });
+
+    /* ── MAIN APP ──────────────────────────────────────────────── */
+    function BirthdayQuest() {
+
+      /* localStorage-backed state */
+      const load = (key, fallback) => {
+        try { const s=localStorage.getItem("bq"); return s?JSON.parse(s)[key]??fallback:fallback; }
+        catch { return fallback; }
+      };
+
+      const [screen,      setScreen]      = useState(() => load("screen","intro"));
+      const [idx,         setIdx]         = useState(() => load("idx",0));
+      const [hintLevel,   setHintLevel]   = useState(() => load("hintLevel",0));
+      const [showAnswer,  setShowAnswer]  = useState(() => load("showAnswer",false));
+      const [collageOk,   setCollageOk]   = useState(true);
+      const [photoErrors, setPhotoErrors] = useState({});
+
+      useEffect(() => {
+        try { localStorage.setItem("bq", JSON.stringify({screen,idx,hintLevel,showAnswer})); }
+        catch {}
+      }, [screen,idx,hintLevel,showAnswer]);
+
+      const isBonus  = screen === "bonus";
+      const puzzle   = isBonus ? BONUS : PUZZLES[idx];
+      const accent   = puzzle?.accent ?? C.gold;
+      const maxHints = puzzle?.hints?.length ?? 0;
+
+      function reset() { setHintLevel(0); setShowAnswer(false); }
+
+      function handleHome() {
+        if (window.confirm("Start over from the beginning?")) {
+          try { localStorage.removeItem("bq"); } catch {}
+          setScreen("intro"); setIdx(0); setHintLevel(0); setShowAnswer(false);
+        }
+      }
+
+      function handleJumpEnd() { setScreen("end"); }
+
+      function goNext() {
+        reset();
+        if (!isBonus && idx < PUZZLES.length-1) setIdx(idx+1);
+        else if (!isBonus) setScreen("complete");
+        else setScreen("end");
+      }
+
+      const wrap  = {background:C.bg, minHeight:"100vh", fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"};
+      const inner = {maxWidth:440, margin:"0 auto", padding:"0 14px"};
+
+      /* ── TOP NAV (puzzle screens) ── */
+      function TopNav({showEnd=true}) {
+        return (
+          <div style={{position:"sticky",top:0,zIndex:100,background:"rgba(12,11,26,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid rgba(255,255,255,0.07)",padding:"10px 16px",paddingTop:`calc(10px + env(safe-area-inset-top))`}}>
+            <div style={{maxWidth:440,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+              <button onClick={handleHome} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:10,width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:17,flexShrink:0}}>
+                🏠
+              </button>
+              <span style={{color:C.gold,fontSize:12,fontWeight:600,letterSpacing:"0.05em",textAlign:"center",flex:1}}>
+                Birthday Quest
+              </span>
+              {showEnd ? (
+                <button onClick={handleJumpEnd} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:10,padding:"8px 10px",color:"rgba(237,232,245,0.6)",fontSize:11,cursor:"pointer",fontFamily:"inherit",flexShrink:0,whiteSpace:"nowrap",height:38}}>
+                  End ⏭
+                </button>
+              ) : (
+                <div style={{width:38}}/>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      /* ──────────────────── INTRO ─────────────────────────────── */
+      if (screen === "intro") return (
+        <div style={wrap}>
+          <div style={{...inner, textAlign:"center", paddingTop:48, paddingBottom:`calc(40px + env(safe-area-inset-bottom))`}}>
+            <div style={{fontSize:64,marginBottom:14}}>🎂</div>
+            <h1 style={{color:C.gold,fontSize:32,fontWeight:800,margin:"0 0 8px",letterSpacing:-0.5}}>Birthday Quest</h1>
+            <p style={{color:C.text,fontSize:16,margin:"0 0 6px"}}>5 puzzles. 5 mysteries. 0 spoilers.</p>
+            <p style={{color:"rgba(232,197,71,0.5)",fontSize:13,margin:"0 0 32px"}}>Solve each one to unlock where you're going next.</p>
+            <div style={{background:"rgba(232,197,71,0.06)",border:"1px solid rgba(232,197,71,0.18)",borderRadius:16,padding:"18px 20px",marginBottom:28,textAlign:"left"}}>
+              <p style={{color:C.gold,fontSize:11,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",margin:"0 0 12px"}}>Today's journey</p>
+              <p style={{color:C.text,fontSize:14,margin:"0 0 6px"}}>🍳 Breakfast — <em style={{color:"rgba(237,232,245,0.45)"}}>you are here</em></p>
+              {["🔥","☕","🏍️","🍣","💆"].map((e,i)=>(
+                <p key={i} style={{color:"rgba(237,232,245,0.28)",fontSize:14,margin:"0 0 5px",fontStyle:"italic"}}>{e} Stop #{i+1} — ???</p>
+              ))}
+              <p style={{color:"rgba(192,132,252,0.38)",fontSize:12,fontStyle:"italic",marginTop:8,marginBottom:0}}>...and possibly one more secret 🎮</p>
+            </div>
+            <button onClick={()=>setScreen("puzzle")} style={btnPrimary(C.gold,false)}>Begin the Quest ✨</button>
+          </div>
+        </div>
+      );
+
+      /* ──────────────────── COMPLETE ──────────────────────────── */
+      if (screen === "complete") return (
+        <div style={wrap}>
+          <TopNav showEnd={false}/>
+          <div style={{...inner, textAlign:"center", paddingTop:48, paddingBottom:`calc(40px + env(safe-area-inset-bottom))`}}>
+            <div style={{fontSize:60,marginBottom:14}}>🏆</div>
+            <h1 style={{color:C.gold,fontSize:30,fontWeight:800,margin:"0 0 8px"}}>All 5 Cracked!</h1>
+            <p style={{color:C.text,fontSize:16,margin:"0 0 32px"}}>Completely undefeated.</p>
+            <div style={{background:"rgba(192,132,252,0.08)",border:"1px solid rgba(192,132,252,0.3)",borderRadius:16,padding:"20px 22px",marginBottom:24}}>
+              <p style={{color:C.purple,fontSize:20,fontWeight:700,margin:"0 0 10px"}}>But wait... 🌙</p>
+              <p style={{color:C.text,fontSize:14,lineHeight:1.7,margin:0}}>The massage ends the puzzle chain. But the night itself? Not quite. One final secret destination has been unlocked.</p>
+            </div>
+            <button onClick={()=>{setScreen("bonus");reset();}} style={{...btnPrimary(C.purple,true),color:"#fff"}}>🎮 Unlock Bonus Round</button>
+          </div>
+        </div>
+      );
+
+      /* ──────────────────── GALLERY ───────────────────────────── */
+      if (screen === "gallery") return (
+        <div style={wrap}>
+          <div style={{position:"sticky",top:0,zIndex:100,background:"rgba(12,11,26,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid rgba(255,255,255,0.07)",padding:"12px 16px",paddingTop:`calc(12px + env(safe-area-inset-top))`}}>
+            <div style={{maxWidth:440,margin:"0 auto",display:"flex",alignItems:"center",gap:12}}>
+              <button onClick={()=>setScreen("end")} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:10,padding:"8px 14px",color:C.text,fontSize:13,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>
+                ← Back
+              </button>
+              <p style={{color:C.gold,fontSize:14,fontWeight:600,margin:0}}>📸 Today's Photos</p>
+            </div>
+          </div>
+          <div style={{...inner,paddingTop:16,paddingBottom:`calc(32px + env(safe-area-inset-bottom))`}}>
+            <div style={{columns:2,columnGap:8}}>
+              {DAY_PHOTOS.map((src,i) => (
+                <div key={i} style={{breakInside:"avoid",marginBottom:8,display:photoErrors[i]?"none":"block"}}>
+                  <img
+                    src={src}
+                    alt={`Photo ${i+1}`}
+                    onError={()=>setPhotoErrors(prev=>({...prev,[i]:true}))}
+                    style={{width:"100%",borderRadius:10,display:"block"}}
+                  />
+                </div>
+              ))}
+            </div>
+            {Object.keys(photoErrors).length === 20 && (
+              <p style={{color:"rgba(237,232,245,0.4)",textAlign:"center",fontSize:14,padding:"40px 0",fontStyle:"italic"}}>
+                Photos coming soon... 📸
+              </p>
+            )}
+            <button onClick={()=>setScreen("end")} style={{...btnPrimary(C.gold,false),marginTop:24}}>
+              ← Back to Birthday Page
+            </button>
+          </div>
+        </div>
+      );
+
+      /* ──────────────────── END ───────────────────────────────── */
+      if (screen === "end") return (
+        <div style={wrap}>
+          <TopNav showEnd={false}/>
+          <div style={{...inner,paddingTop:32,paddingBottom:`calc(48px + env(safe-area-inset-bottom))`}}>
+
+            {/* ── Birthday messages ── */}
+            <div style={{textAlign:"center",marginBottom:32}}>
+              <div style={{fontSize:60,marginBottom:20}}>🎂</div>
+
+              <p style={{color:C.gold,fontSize:30,fontWeight:800,lineHeight:1.3,margin:"0 0 24px",letterSpacing:-0.5}}>
+                Happy birthday beb!
+              </p>
+
+              <div style={{background:"rgba(232,197,71,0.07)",border:"1px solid rgba(232,197,71,0.2)",borderRadius:16,padding:"18px 20px",marginBottom:16,textAlign:"left"}}>
+                <p style={{color:C.text,fontSize:16,lineHeight:1.7,margin:0}}>
+                  Since you are a rabbit, you just turned 2 years old in rabbit years 🐇
+                </p>
+              </div>
+
+              <div style={{background:"rgba(232,197,71,0.07)",border:"1px solid rgba(232,197,71,0.2)",borderRadius:16,padding:"18px 20px",marginBottom:8,textAlign:"left"}}>
+                <p style={{color:C.text,fontSize:15,lineHeight:1.75,margin:0}}>
+                  Congrats for solving all the quizzes! 5 puzzles · 1 bonus round · Nokia numbers · word searches · ciphers · Korean phonetics · K-pop first letters · Pokédex entries. You got every single one! Baby can do hard things 👏
+                </p>
+              </div>
+            </div>
+
+            {/* ── Collage ── */}
+            {collageOk && (
+              <div style={{marginBottom:24,borderRadius:20,overflow:"hidden",boxShadow:"0 8px 32px rgba(0,0,0,0.5)"}}>
+                <img
+                  src="collage.jpg"
+                  alt="Birthday collage"
+                  onError={()=>setCollageOk(false)}
+                  style={{width:"100%",display:"block"}}
+                />
+              </div>
+            )}
+
+            {/* ── View photos button ── */}
+            <button onClick={()=>setScreen("gallery")} style={{...btnPrimary(C.pink,false),marginBottom:24}}>
+              📸 View All Photos
+            </button>
+
+            {/* ── Journey list ── */}
+            <div style={{background:"rgba(232,197,71,0.07)",border:"1px solid rgba(232,197,71,0.2)",borderRadius:16,padding:"18px 20px",marginBottom:24}}>
+              <p style={{color:C.gold,fontSize:11,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",margin:"0 0 12px"}}>
+                Today's journey, unlocked
+              </p>
+              {JOURNEY.map((s,i)=>(
+                <p key={i} style={{color:C.text,fontSize:14,margin:"0 0 8px",lineHeight:1.4}}>{s}</p>
+              ))}
+            </div>
+
+          </div>
+        </div>
+      );
+
+      /* ──────────────────── PUZZLE / BONUS ────────────────────── */
+      const pct = isBonus ? 100 : ((idx+1)/PUZZLES.length)*100;
+
+      return (
+        <div style={wrap}>
+          <TopNav showEnd={true}/>
+          <div style={{...inner,paddingTop:20,paddingBottom:`calc(40px + env(safe-area-inset-bottom))`}}>
+
+            {/* Progress */}
+            <div style={{marginBottom:16}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                <span style={{color:accent,fontSize:12,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase"}}>{puzzle.emoji} {puzzle.label}</span>
+                <span style={{color:"rgba(237,232,245,0.3)",fontSize:11}}>{puzzle.theme}</span>
+              </div>
+              <div style={{background:"rgba(255,255,255,0.08)",borderRadius:4,height:3}}>
+                <div style={{background:isBonus?"linear-gradient(90deg,#7C3AED,#C084FC)":`linear-gradient(90deg,${accent}80,${accent})`,borderRadius:4,height:"100%",width:pct+"%",transition:"width 0.4s ease"}}/>
+              </div>
+            </div>
+
+            {/* Meta */}
+            <p style={{color:`${accent}60`,fontSize:11,margin:"0 0 2px"}}>📍 From: {puzzle.from}</p>
+            <p style={{color:"rgba(237,232,245,0.35)",fontSize:12,fontStyle:"italic",margin:"0 0 14px"}}>{puzzle.teaser}</p>
+
+            {/* Puzzle card */}
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"18px 16px",marginBottom:12}}>
+              {puzzle.intro && puzzle.intro.map((item,i)=><Line key={i} item={item}/>)}
+              {puzzle.intro && puzzle.intro.length>0 && puzzle.mechanic && (
+                <div style={{height:1,background:"rgba(255,255,255,0.07)",margin:"12px 0 16px"}}/>
+              )}
+              {puzzle.mechanic && <Mechanic data={puzzle.mechanic} showAnswer={showAnswer} accent={accent}/>}
+            </div>
+
+            {/* Hints */}
+            {hintLevel > 0 && puzzle.hints && (
+              <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:2}}>
+                {puzzle.hints.slice(0,hintLevel).map((h,i)=>(
+                  <div key={i} style={{background:`${accent}0E`,border:`1px solid ${accent}30`,borderRadius:12,padding:"12px 16px"}}>
+                    {puzzle.hints.length>1 && <p style={{color:accent,fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",margin:"0 0 4px"}}>Hint {i+1}</p>}
+                    <p style={{color:accent,fontSize:13,lineHeight:1.55,margin:0}}>{h}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {maxHints>0 && hintLevel<maxHints && (
+              <button onClick={()=>setHintLevel(hintLevel+1)} style={btnGhost(`${accent}65`)}>
+                {hintLevel===0?"💡 Need a hint?":"🤔 One more hint?"}
+              </button>
+            )}
+            {maxHints>0 && hintLevel>=maxHints && (
+              <button disabled style={{...btnGhost("rgba(237,232,245,0.18)"),cursor:"default"}}>— no more hints —</button>
+            )}
+
+            {/* Answer */}
+            <button onClick={()=>setShowAnswer(!showAnswer)} style={btnGhost("rgba(255,120,120,0.45)")}>
+              {showAnswer?"🙈 Hide Answer":"👀 Reveal Answer — no peeking!"}
+            </button>
+            {showAnswer && (
+              <div style={{background:"rgba(74,222,128,0.06)",border:"1px solid rgba(74,222,128,0.25)",borderRadius:12,padding:"16px",marginTop:8}}>
+                <p style={{color:C.green,fontSize:16,fontWeight:700,margin:"0 0 8px",fontFamily:"monospace"}}>{puzzle.answer}</p>
+                <p style={{color:C.text,fontSize:13,lineHeight:1.65,margin:0}}>{puzzle.reveal}</p>
+              </div>
+            )}
+
+            {/* Next */}
+            {showAnswer && (
+              <button onClick={goNext} style={{...( isBonus ? {background:"linear-gradient(135deg,#7C3AED,#4C1D95)",color:"#fff"} : btnPrimary(accent,false) ),border:"none",borderRadius:14,padding:"15px 20px",fontSize:16,fontWeight:700,cursor:"pointer",width:"100%",fontFamily:"inherit",minHeight:50,marginTop:10}}>
+                {isBonus?"🎉 Happy Birthday!":idx<PUZZLES.length-1?`Next Puzzle → (${idx+2} of 5)`:"🎉 All Puzzles Solved!"}
+              </button>
+            )}
+
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(BirthdayQuest));
+  </script>
+</body>
+</html>
